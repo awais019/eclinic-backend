@@ -1,27 +1,20 @@
-# My Django Project
-# Version: 1.0
+FROM python:3
 
-# FROM - Image to start building on.
-FROM python
-
-
-# PROJECT SETUP
-# ----------------
-
-# sets the working directory
+ENV PYTHONUNBUFFERED=1
 WORKDIR /eclinic
 
-# copy these two files from <src> to <dest>
-# <src> = current directory on host machine
-# <dest> = filesystem of the container
+# Install pipenv
+RUN pip install --upgrade pip 
+RUN pip install pipenv
+
+# Install application dependencies
 COPY Pipfile Pipfile.lock /eclinic/
+# We use the --system flag so packages are installed into the system python
+# and not into a virtualenv. Docker containers don't need virtual environments. 
+RUN pipenv install --system --dev
 
-# install pipenv on the container
-RUN pip install -U pipenv
+# Copy the application files into the image
+COPY . /eclinic/
 
-# install project dependencies
-RUN pipenv install --system
-
-# copy all files and directories from <src> to <dest>
-COPY . /eclinic
-EXPOSE 8000
+# Expose port 8000 on the container
+EXPOSE 8000 8001
