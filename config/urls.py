@@ -21,5 +21,5 @@ from .views  import check_server
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('__degbug__/', include(debug_toolbar.urls)),
-    path('', check_server)
+    path('', include('clinic.urls')),
 ]
