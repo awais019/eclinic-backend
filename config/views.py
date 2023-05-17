@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.shortcuts import render
 
 def check_server(request):
-    return HttpResponse('Server is up and running')
+    return render(request, 'server.html')
