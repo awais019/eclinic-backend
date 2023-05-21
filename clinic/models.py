@@ -27,7 +27,7 @@ PAYEMENT_CHOICES = (
 class Doctor(models.Model):
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
-    speicilization = models.CharField(max_length=255)
+    specialization = models.CharField(max_length=255)
     email = models.EmailField()
     phone_number = models.CharField(max_length=20)
     gender = models.CharField(max_length=20, choices=GENDER_CHOICES)
