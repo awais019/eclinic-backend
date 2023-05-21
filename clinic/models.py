@@ -77,7 +77,7 @@ class Location(models.Model):
     class Meta:
         verbose_name = 'Location'
         verbose_name_plural = 'Locations'
-        Ordering = ['city', 'state']
+        ordering = ['city', 'state']
 
 
 class Appointment(models.Model):
@@ -99,7 +99,7 @@ class Appointment(models.Model):
                 fields=['patient', 'doctor', 'date', 'time'], name='unique_appointment'
             )
         ]
-        Ordering = ['date', 'time']
+        ordering = ['date', 'time']
 
 
 class Payment(models.Model):
@@ -115,7 +115,7 @@ class Payment(models.Model):
     class Meta:
         verbose_name = 'Payment'
         verbose_name_plural = 'Payments'
-        Ordering = ['amount']
+        ordering = ['amount']
 
 
 class Review(models.Model):
@@ -130,7 +130,7 @@ class Review(models.Model):
     class Meta:
         verbose_name = 'Review'
         verbose_name_plural = 'Reviews'
-        Ordering = ['rating']
+        ordering = ['rating']
 
 
 class Prescription(models.Model):
@@ -145,7 +145,7 @@ class Prescription(models.Model):
     class Meta:
         verbose_name = 'Prescription'
         verbose_name_plural = 'Prescriptions'
-        Ordering = ['date']
+        ordering = ['date']
 
 
 class MedicalRecord(models.Model):
