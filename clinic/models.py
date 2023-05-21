@@ -31,7 +31,7 @@ class Doctor(models.Model):
     email = models.EmailField()
     phone_number = models.CharField(max_length=20)
     gender = models.CharField(max_length=20, choices=GENDER_CHOICES)
-    location = models.ForeignKey(
+    location = models.OneToOneField(
         'Location', on_delete=models.CASCADE, related_name='doctor_id')
     charges = models.DecimalField(max_digits=8, decimal_places=2)
     status = models.CharField(
@@ -91,6 +91,11 @@ class Appointment(models.Model):
     class Meta:
         verbose_name = 'Appointment'
         verbose_name_plural = 'Appointments'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['patient', 'doctor', 'date', 'time'], name='unique_appointment'
+            )
+        ]
 
 
 class Payment(models.Model):
