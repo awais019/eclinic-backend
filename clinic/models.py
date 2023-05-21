@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MinValueValidator
 
 
 STATUS_CHOICES = (
@@ -33,7 +34,8 @@ class Doctor(models.Model):
     gender = models.CharField(max_length=20, choices=GENDER_CHOICES)
     location = models.OneToOneField(
         'Location', on_delete=models.CASCADE, related_name='doctor_id')
-    charges = models.DecimalField(max_digits=8, decimal_places=2)
+    charges = models.DecimalField(max_digits=8, decimal_places=2, 
+                                  validators=[MinValueValidator(1)])
     status = models.CharField(
         max_length=20, choices=STATUS_CHOICES, default='active')
     approval_status = models.CharField(
