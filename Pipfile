@@ -12,6 +12,7 @@ django-debug-toolbar = "*"
 djangorestframework = "*"
 drf-writable-nested = "*"
 drf-nested-routers = "*"
+django-filter = "*"
 
 [dev-packages]
 
