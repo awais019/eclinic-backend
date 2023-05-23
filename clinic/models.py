@@ -1,11 +1,8 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
+from django.contrib import admin
 from django.core.validators import MinValueValidator
-
-
-STATUS_CHOICES = (
-    ('active', 'Active'),
-    ('inactive', 'Inactive'),
-)
+from .managers import UserManager
 
 APPROVAL_CHOICES = (
     ('approved', 'Approved'),
@@ -24,46 +21,78 @@ PAYEMENT_CHOICES = (
     ('unpaid', 'Unpaid'),
 )
 
+class User(AbstractUser):
+    username = None
+    email = models.EmailField(unique=True)
+    phone_number = models.CharField(max_length=20, unique=True)
+    gender = models.CharField(max_length=20, choices=GENDER_CHOICES)
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
+    objects = UserManager()
 
 class Doctor(models.Model):
-    first_name = models.CharField(max_length=255)
-    last_name = models.CharField(max_length=255)
     specialization = models.CharField(max_length=255)
-    email = models.EmailField()
-    phone_number = models.CharField(max_length=20)
-    gender = models.CharField(max_length=20, choices=GENDER_CHOICES)
     location = models.OneToOneField(
         'Location', on_delete=models.CASCADE, related_name='doctor_id')
     charges = models.DecimalField(max_digits=8, decimal_places=2, 
                                   validators=[MinValueValidator(1)])
-    status = models.CharField(
-        max_length=20, choices=STATUS_CHOICES, default='active')
     approval_status = models.CharField(
         max_length=20, choices=APPROVAL_CHOICES, default='pending')
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+    @admin.display(ordering='user__first_name')
+    def first_name(self):
+        return self.user.first_name
+    
+    @admin.display(ordering='user__last_name')
+    def last_name(self):
+        return self.user.last_name
+    
+    def email(self):
+        return self.user.email
+    
+    def phone_number(self):
+        return self.user.phone_number
+
+    def gender(self):
+        self.user.gender
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        return f"{self.user.first_name} {self.user.last_name}"
 
     class Meta:
         verbose_name = 'Doctor'
         verbose_name_plural = 'Doctors'
-        ordering = ['first_name', 'last_name']
+        ordering = ['user__first_name', 'user__last_name']
 
 
 class Patient(models.Model):
-    first_name = models.CharField(max_length=255)
-    last_name = models.CharField(max_length=255)
-    email = models.EmailField()
-    phone_number = models.CharField(max_length=20)
-    gender = models.CharField(max_length=20)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+    @admin.display(ordering='user__first_name')
+    def first_name(self):
+        return self.user.first_name
+    
+    @admin.display(ordering='user__last_name')
+    def last_name(self):
+        return self.user.last_name
+    
+    def email(self):
+        return self.user.email
+    
+    def phone_number(self):
+        return self.user.phone_number
+    
+    def gender(self):
+        return self.user.gender
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        return f"{self.user.first_name} {self.user.last_name}"
 
     class Meta:
         verbose_name = 'Patient'
         verbose_name_plural = 'Patients'
-        ordering = ['first_name', 'last_name']
+        ordering = ['user__first_name', 'user__last_name']
 
 
 class Location(models.Model):
