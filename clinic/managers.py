@@ -2,8 +2,8 @@ from django.contrib.auth.models import BaseUserManager
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, email, first_name='Muhammad', last_name='Awais', phone_number='03424599274', gender='male',
-                    password=None, is_admin=False, is_staff=False, is_active=True):
+    def create_user(self, email, first_name='XYZ', last_name='XYZ', phone_number='XYZ', gender='male',
+                    password=None, is_admin=False, is_staff=False, is_active=True, user_type='admin'):
         if not email:
             raise ValueError("User must have an email")
         if not password:
@@ -26,6 +26,7 @@ class UserManager(BaseUserManager):
         user.is_superuser = is_admin
         user.is_staff = is_staff
         user.is_active = is_active
+        user.user_type = user_type
         user.save(using=self._db)
         return user
 
@@ -37,6 +38,7 @@ class UserManager(BaseUserManager):
             gender,
             password=password,
             is_staff=True,
+            user_type='staff'
         )
         return user
 
@@ -46,5 +48,6 @@ class UserManager(BaseUserManager):
             password=password,
             is_staff=True,
             is_admin=True,
+            user_type='admin'
         )
         return user
