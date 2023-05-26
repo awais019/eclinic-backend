@@ -18,7 +18,7 @@ class LocationSerializer(serializers.ModelSerializer):
 class UserCreateSerializer(BaseUserCreateSerializer):
     class Meta(BaseUserCreateSerializer.Meta):
         fields = ['id', 'first_name', 'last_name',
-                  'email', 'phone_number', 'gender', 'password', 'user_type']
+                  'email', 'phone_number', 'gender', 'password']
     
     id = serializers.IntegerField(read_only=True)
 
@@ -45,7 +45,6 @@ class DoctorSerializer(WritableNestedModelSerializer, serializers.ModelSerialize
     
     def create(self, validated_data):
         user_data = validated_data.pop('user')
-        user_data['user_type'] = 'doctor'
         user = UserCreateSerializer(data=user_data)
         user.is_valid(raise_exception=True)
         user.save()

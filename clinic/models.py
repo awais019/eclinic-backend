@@ -4,13 +4,6 @@ from django.contrib import admin
 from django.core.validators import MinValueValidator
 from .managers import UserManager
 
-USER_CHOICES = (
-    ('doctor', 'Doctor'),
-    ('patient', 'Patient'),
-    ('admin', 'Admin'),
-    ('staff', 'Staff'),
-)
-
 APPROVAL_CHOICES = (
     ('approved', 'Approved'),
     ('pending', 'Pending'),
@@ -33,7 +26,6 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     phone_number = models.CharField(max_length=20, unique=True)
     gender = models.CharField(max_length=20, choices=GENDER_CHOICES)
-    user_type = models.CharField(max_length=20, choices=USER_CHOICES, default='patient')
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
     objects = UserManager()
