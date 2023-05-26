@@ -52,17 +52,6 @@ class DoctorSerializer(WritableNestedModelSerializer, serializers.ModelSerialize
         location = Location.objects.create(**location)
         return Doctor.objects.create(user=user.instance, location=location, **validated_data)
 
-    def update(self, instance, validated_data):
-        print(validated_data)
-        if validated_data.get('email'):
-            raise serializers.ValidationError("You can't change email")
-        elif validated_data.get('phone_number'):
-            raise serializers.ValidationError("You can't change phone number")
-        elif validated_data.get('password'):
-            raise serializers.ValidationError("You can't change password")
-        
-        return super().update(instance, validated_data)
-
     # first_name = serializers.CharField(max_length=255)
     # last_name = serializers.CharField(max_length=255)
     # email = serializers.EmailField()
@@ -72,3 +61,25 @@ class DoctorSerializer(WritableNestedModelSerializer, serializers.ModelSerialize
     # charges = serializers.DecimalField(max_digits=8, decimal_places=2,
     #                                    validators=[MinValueValidator(1)])
 
+
+class DoctorUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Doctor
+        fields = ['id', 'first_name', 'last_name', 'gender', 'specialization', 'charges']
+    first_name = serializers.CharField(max_length=255)
+    last_name = serializers.CharField(max_length=255)
+    gender = serializers.CharField(max_length=20)
+
+    def update(self, instance, validated_data):
+        user_data = {
+            'first_name': validated_data.get('first_name', instance.user.first_name),
+            'last_name': validated_data.get('last_name', instance.user.last_name),
+            'gender': validated_data.get('gender', instance.user.last_name),
+            'email': instance.user.email,
+            'phone_number': instance.user.phone_number,
+            'password': instance.user.password
+        }
+        user = UserSerializer(instance.user, data=user_data)
+        user.is_valid(raise_exception=True)
+        user.save()
+        return super().update(instance, validated_data)
