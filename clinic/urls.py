@@ -1,10 +1,13 @@
 from django.urls import path
-from .views  import index
 from rest_framework_nested.routers import SimpleRouter
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from .views import DoctorRegisterViewSet
+from .views import index, DoctorRegisterViewSet
 
 router = SimpleRouter()
 router.register('doctors/register', DoctorRegisterViewSet, basename='doctors-register')
 
-urlpatterns = [path('', index)] + router.urls
+urlpatterns = [path('', index),
+               path('auth/signin/', TokenObtainPairView.as_view()),
+                path('auth/refresh/', TokenRefreshView.as_view())
+               ] + router.urls
