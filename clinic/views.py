@@ -10,8 +10,8 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 
 from .filtering import DoctorFilter
 from .pagination import DefaultPagination
-from .models import Doctor, User
-from .serializers import DoctorSerializer, DoctorUpdateSerializer
+from .models import Doctor, User, Patient
+from .serializers import DoctorSerializer, DoctorUpdateSerializer, PatientSerializer
 # Create your views here.
 
 def index(request):
@@ -60,3 +60,7 @@ class DoctorListViewSet(ListModelMixin, GenericViewSet):
 class DoctorRetrieveViewSet(RetrieveModelMixin, GenericViewSet):
     queryset = Doctor.objects.all()
     serializer_class = DoctorSerializer
+
+class PatientRegisterViewSet(CreateModelMixin, GenericViewSet):
+    queryset = Patient.objects.all()
+    serializer_class = PatientSerializer

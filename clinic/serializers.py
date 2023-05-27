@@ -3,7 +3,8 @@ from rest_framework import serializers
 from drf_writable_nested import WritableNestedModelSerializer
 from djoser.serializers import UserCreateSerializer as BaseUserCreateSerializer
 from djoser.serializers import UserSerializer as BaseUserSerializer
-from .models import Doctor, Patient, Location, Review, User
+from .models import Doctor, Patient, Location, Review
+from datetime import date
 
 class LocationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -83,3 +84,24 @@ class DoctorUpdateSerializer(serializers.ModelSerializer):
         user.is_valid(raise_exception=True)
         user.save()
         return super().update(instance, validated_data)
+
+class PatientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Patient
+        fields = ['id', 'first_name', 'last_name', 'gender', 'email', 'phone_number', 'password', 'birth_date']
+
+    id = serializers.IntegerField(read_only=True)
+    first_name = serializers.CharField(max_length=255, source='user.first_name')
+    last_name = serializers.CharField(max_length=255, source='user.last_name')
+    email = serializers.EmailField(source='user.email')
+    phone_number = serializers.CharField(max_length=20, source='user.phone_number')
+    gender = serializers.CharField(max_length=20, source='user.gender')
+    password = serializers.CharField(write_only=True, source='user.password')
+    birth_date = serializers.DateField()
+
+    def create(self, validated_data):
+        user_data = validated_data.pop('user')
+        user = UserCreateSerializer(data=user_data)
+        user.is_valid(raise_exception=True)
+        user.save()
+        return Patient.objects.create(user=user.instance, **validated_data)
