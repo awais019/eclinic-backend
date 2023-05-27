@@ -69,6 +69,7 @@ class Doctor(models.Model):
 
 class Patient(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    birth_date = models.DateField()
 
     @admin.display(ordering='user__first_name')
     def first_name(self):
