@@ -117,3 +117,27 @@ class PatientSerializer(serializers.ModelSerializer):
         user.is_valid(raise_exception=True)
         user.save()
         return Patient.objects.create(user=user.instance, **validated_data)
+    
+class PatientUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Patient
+        fields = ['id', 'first_name', 'last_name', 'gender', 'birth_date']
+    first_name = serializers.CharField(max_length=255)
+    last_name = serializers.CharField(max_length=255)
+    gender = serializers.CharField(max_length=20)
+    birth_date = serializers.DateField()
+
+    def update(self, instance, validated_data):
+        user_data = {
+            'first_name': validated_data.get('first_name', instance.user.first_name),
+            'last_name': validated_data.get('last_name', instance.user.last_name),
+            'gender': validated_data.get('gender', instance.user.last_name),
+            'email': instance.user.email,
+            'phone_number': instance.user.phone_number,
+            'password': instance.user.password
+        }
+        user = UserSerializer(instance.user, data=user_data)
+        user.is_valid(raise_exception=True)
+        user.save()
+        return super().update(instance, validated_data)
+        
