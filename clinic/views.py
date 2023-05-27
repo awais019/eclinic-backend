@@ -49,7 +49,7 @@ class DoctorRegisterViewSet(CreateModelMixin, GenericViewSet):
     serializer_class = DoctorSerializer
 
 class DoctorListViewSet(ListModelMixin, GenericViewSet):
-    queryset = Doctor.objects.select_related('location').all()
+    queryset = Doctor.objects.select_related().all()
     serializer_class = DoctorSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = DoctorFilter
@@ -58,9 +58,13 @@ class DoctorListViewSet(ListModelMixin, GenericViewSet):
     pagination_class = DefaultPagination
 
 class DoctorRetrieveViewSet(RetrieveModelMixin, GenericViewSet):
-    queryset = Doctor.objects.all()
+    queryset = Doctor.objects.select_related().all()
     serializer_class = DoctorSerializer
 
 class PatientRegisterViewSet(CreateModelMixin, GenericViewSet):
     queryset = Patient.objects.all()
+    serializer_class = PatientSerializer
+
+class PatientRetrieveViewSet(RetrieveModelMixin, GenericViewSet):
+    queryset = Patient.objects.select_related().all()
     serializer_class = PatientSerializer

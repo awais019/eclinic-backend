@@ -88,7 +88,7 @@ class DoctorUpdateSerializer(serializers.ModelSerializer):
 class PatientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Patient
-        fields = ['id', 'first_name', 'last_name', 'gender', 'email', 'phone_number', 'password', 'birth_date']
+        fields = ['id', 'first_name', 'last_name', 'gender', 'email', 'phone_number', 'password', 'birth_date', 'age']
 
     id = serializers.IntegerField(read_only=True)
     first_name = serializers.CharField(max_length=255, source='user.first_name')
@@ -98,6 +98,18 @@ class PatientSerializer(serializers.ModelSerializer):
     gender = serializers.CharField(max_length=20, source='user.gender')
     password = serializers.CharField(write_only=True, source='user.password')
     birth_date = serializers.DateField()
+    age = serializers.SerializerMethodField(read_only=True, method_name='cal_age')
+
+    def cal_age(self, obj):
+        today = date.today()
+        age = today.year - obj.birth_date.year - ((today.month, today.day) < (obj.birth_date.month, obj.birth_date.day))
+        if age > 0:
+            return f'{age} years'
+        age = (today.month - obj.birth_date.month) % 12
+        if age > 0:
+            return f'{age} months'
+        age = (today.day - obj.birth_date.day) % 30
+        return f'{age} days'
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')

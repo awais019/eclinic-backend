@@ -3,7 +3,7 @@ from rest_framework_nested.routers import SimpleRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from .views import index, UserProfileViewSet, DoctorRegisterViewSet, DoctorListViewSet, \
-                DoctorRetrieveViewSet, PatientRegisterViewSet
+                DoctorRetrieveViewSet, PatientRegisterViewSet, PatientRetrieveViewSet
 
 router = SimpleRouter()
 router.register('auth/users', UserProfileViewSet, basename='users')
@@ -12,6 +12,7 @@ router.register('doctors', DoctorListViewSet, basename='doctors')
 router.register('doctors', DoctorRetrieveViewSet, basename='doctors')
 
 router.register('patients/register', PatientRegisterViewSet, basename='patients-register')
+router.register('patients', PatientRetrieveViewSet, basename='patients')
 
 urlpatterns = [path('', index),
                path('auth/signin/', TokenObtainPairView.as_view()),
