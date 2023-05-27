@@ -156,7 +156,7 @@ class Review(models.Model):
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
     review = models.TextField()
     rating = models.IntegerField()
-    date = models.DateField(auto_now_add=True)
+    date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.patient} {self.doctor} {self.rating}"
