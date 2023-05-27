@@ -1,4 +1,4 @@
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from rest_framework import serializers
 from drf_writable_nested import WritableNestedModelSerializer
 from djoser.serializers import UserCreateSerializer as BaseUserCreateSerializer
@@ -141,3 +141,21 @@ class PatientUpdateSerializer(serializers.ModelSerializer):
         user.save()
         return super().update(instance, validated_data)
         
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ['id', 'patient', 'patient_name', 'rating', 'review', 'date']
+    id = serializers.IntegerField(read_only=True)
+    patient = serializers.PrimaryKeyRelatedField(queryset=Patient.objects.select_related().all())
+    patient_name = serializers.SerializerMethodField(read_only=True, method_name='get_patient_name')
+    rating = serializers.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    review = serializers.CharField(max_length=255, allow_blank=True)
+    date = serializers.DateTimeField(read_only=True, format='%d-%m-%Y %H:%M:%S')
+
+    def get_patient_name(self, obj):
+        return f'{obj.patient.user.first_name} {obj.patient.user.last_name}'
+
+    def create(self, validated_data):
+        doctor_id = self.context['view'].kwargs['doctors_pk']
+        doctor = Doctor.objects.get(id=doctor_id)
+        return Review.objects.create(doctor=doctor, **validated_data)

@@ -2,7 +2,7 @@ from django.shortcuts import render
 
 from rest_framework.response import Response
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, ListModelMixin
-from rest_framework.viewsets import GenericViewSet
+from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
@@ -10,8 +10,9 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 
 from .filtering import DoctorFilter
 from .pagination import DefaultPagination
-from .models import Doctor, User, Patient
-from .serializers import DoctorSerializer, DoctorUpdateSerializer, PatientSerializer, PatientUpdateSerializer
+from .models import Doctor, User, Patient, Review
+from .serializers import DoctorSerializer, DoctorUpdateSerializer, PatientSerializer, \
+                        PatientUpdateSerializer, ReviewSerializer
 # Create your views here.
 
 def index(request):
@@ -84,3 +85,7 @@ class PatientRegisterViewSet(CreateModelMixin, GenericViewSet):
 class PatientRetrieveViewSet(RetrieveModelMixin, GenericViewSet):
     queryset = Patient.objects.select_related().all()
     serializer_class = PatientSerializer
+
+class ReviewViewSet(ModelViewSet):
+    queryset = Review.objects.select_related().all()
+    serializer_class = ReviewSerializer
