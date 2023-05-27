@@ -1,11 +1,16 @@
 from django.shortcuts import render
 
 from rest_framework.response import Response
-from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin
+from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, ListModelMixin
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.pagination import PageNumberPagination
 
+from .filtering import DoctorFilter
+from .pagination import DefaultPagination
 from .models import Doctor, User
 from .serializers import DoctorSerializer, DoctorUpdateSerializer
 # Create your views here.
@@ -43,3 +48,12 @@ class UserProfileViewSet(RetrieveModelMixin, GenericViewSet):
 class DoctorRegisterViewSet(CreateModelMixin, GenericViewSet):
     queryset = Doctor.objects.all()
     serializer_class = DoctorSerializer
+
+class DoctorListViewSet(ListModelMixin, GenericViewSet):
+    queryset = Doctor.objects.select_related('location').all()
+    serializer_class = DoctorSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = DoctorFilter
+    search_fields = ['user__first_name', 'user__last_name', 'location__address', 'location__city', 'location__state']
+    ordering_fields = ['user__first_name', 'user__last_name', 'charges']
+    pagination_class = DefaultPagination

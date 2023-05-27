@@ -5,7 +5,6 @@ class DoctorFilter(FilterSet):
     class Meta:
         model = Doctor
         fields = {
-            'approval_status': ['exact'],
-            'specialization': ['exact'],
+            'specialization': ['iexact'],
             'charges': ['gte', 'lte'],
         }
