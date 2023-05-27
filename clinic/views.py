@@ -10,9 +10,9 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 
 from .filtering import DoctorFilter
 from .pagination import DefaultPagination
-from .models import Doctor, User, Patient, Review
+from .models import Doctor, User, Patient, Review, Appointment
 from .serializers import DoctorSerializer, DoctorUpdateSerializer, PatientSerializer, \
-                        PatientUpdateSerializer, ReviewSerializer
+                        PatientUpdateSerializer, ReviewSerializer, AppointmentSerializer
 # Create your views here.
 
 def index(request):
@@ -89,3 +89,22 @@ class PatientRetrieveViewSet(RetrieveModelMixin, GenericViewSet):
 class ReviewViewSet(ModelViewSet):
     queryset = Review.objects.select_related().all()
     serializer_class = ReviewSerializer
+
+class AppointmentViewSet(CreateModelMixin, GenericViewSet):
+    queryset = Appointment.objects.select_related().all()
+    serializer_class = AppointmentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        is_patient = Patient.objects.filter(user_id=request.user.id).exists()
+        if is_patient:
+            if Appointment.objects.filter(patient=request.data['patient'], date=request.data['date']).filter(doctor=request.data['doctor']).exists():
+                return Response({'error': 'You already have an appointment on the same date.'}, status=400)
+            if Appointment.objects.filter(doctor=request.data['doctor'], date=request.data['date'], time=request.data['time']).exists():
+                return Response({'error': 'Doctor is not available at this time.'}, status=400)
+            
+            return super().create(request, *args, **kwargs)
+        
+        return Response({'error': 'Only patients can create appointments.'}, status=403)
+        
+        

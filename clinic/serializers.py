@@ -3,7 +3,7 @@ from rest_framework import serializers
 from drf_writable_nested import WritableNestedModelSerializer
 from djoser.serializers import UserCreateSerializer as BaseUserCreateSerializer
 from djoser.serializers import UserSerializer as BaseUserSerializer
-from .models import Doctor, Patient, Location, Review
+from .models import Doctor, Patient, Location, Review, Appointment
 from datetime import date
 
 class LocationSerializer(serializers.ModelSerializer):
@@ -159,3 +159,8 @@ class ReviewSerializer(serializers.ModelSerializer):
         doctor_id = self.context['view'].kwargs['doctors_pk']
         doctor = Doctor.objects.get(id=doctor_id)
         return Review.objects.create(doctor=doctor, **validated_data)
+    
+class AppointmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Appointment
+        fields = ['id', 'doctor', 'patient', 'date', 'time']
