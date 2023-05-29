@@ -1,8 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib import admin
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, FileExtensionValidator
 from .managers import UserManager
+from .validators import validate_file_size
 
 APPROVAL_CHOICES = (
     ('approved', 'Approved'),
@@ -32,9 +33,14 @@ class User(AbstractUser):
     objects = UserManager()
 
 class UserImage(models.Model):
-    image = models.ImageField(upload_to='users/images', null=True, blank=True)
+    image = models.ImageField(upload_to='users/images', null=True, blank=True, validators=[validate_file_size])
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
+class DoctorDegree(models.Model):
+    degree = models.FileField(upload_to='doctors/degrees', null=True, blank=True,
+                               validators=[validate_file_size, FileExtensionValidator(allowed_extensions=['pdf'])])
+    doctor = models.OneToOneField('Doctor', on_delete=models.CASCADE, related_name='degree_document')
+    
 class Doctor(models.Model):
     specialization = models.CharField(max_length=255)
     location = models.OneToOneField(

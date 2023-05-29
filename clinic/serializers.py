@@ -3,7 +3,7 @@ from rest_framework import serializers
 from drf_writable_nested import WritableNestedModelSerializer
 from djoser.serializers import UserCreateSerializer as BaseUserCreateSerializer
 from djoser.serializers import UserSerializer as BaseUserSerializer
-from .models import Doctor, Patient, Location, Review, Appointment, UserImage, User
+from .models import Doctor, Patient, Location, Review, Appointment, UserImage, User, DoctorDegree
 from datetime import date
 
 class LocationSerializer(serializers.ModelSerializer):
@@ -37,12 +37,16 @@ class UserSerializer(BaseUserSerializer):
     class Meta(BaseUserSerializer.Meta):
         fields = ['id', 'first_name', 'last_name','email', 'phone_number', 'gender', 'image']
 
+class DoctorDegreeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DoctorDegree
+        fields = ['id', 'degree']
 
 class DoctorSerializer(WritableNestedModelSerializer, serializers.ModelSerializer):
     class Meta:
         model = Doctor
         fields = ['id', 'first_name', 'last_name', 'email', 'phone_number', 'gender', 'password', 
-                  'specialization', 'charges', 'image_url', 'location']
+                  'specialization', 'charges', 'image_url', 'location', 'degree']
     location = LocationSerializer()
     image_url = serializers.SerializerMethodField(read_only=True, method_name='get_image')
     id = serializers.IntegerField(read_only=True)
@@ -55,6 +59,8 @@ class DoctorSerializer(WritableNestedModelSerializer, serializers.ModelSerialize
     specialization = serializers.CharField(max_length=255)
     charges = serializers.DecimalField(max_digits=8, decimal_places=2,
                                         validators=[MinValueValidator(1)])
+    
+    degree = DoctorDegreeSerializer(write_only=True)
     
     def get_image(self, obj):
         if UserImage.objects.filter(user_id=obj.user.id).exists():
@@ -69,7 +75,10 @@ class DoctorSerializer(WritableNestedModelSerializer, serializers.ModelSerialize
         user.save()
         location = validated_data.pop('location')
         location = Location.objects.create(**location)
-        return Doctor.objects.create(user=user.instance, location=location, **validated_data)
+        degree = validated_data.pop('degree')
+        doctor = Doctor.objects.create(user=user.instance, location=location, **validated_data)
+        DoctorDegree.objects.create(doctor=doctor, **degree)
+        return doctor
 
     # first_name = serializers.CharField(max_length=255)
     # last_name = serializers.CharField(max_length=255)
