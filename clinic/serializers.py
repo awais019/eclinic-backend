@@ -106,7 +106,7 @@ class DoctorUpdateSerializer(serializers.ModelSerializer):
 class PatientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Patient
-        fields = ['id', 'first_name', 'last_name', 'gender', 'email', 'phone_number', 'password', 'birth_date', 'age']
+        fields = ['id', 'first_name', 'last_name', 'gender', 'email', 'phone_number', 'password', 'birth_date', 'age', 'image']
 
     id = serializers.IntegerField(read_only=True)
     first_name = serializers.CharField(max_length=255, source='user.first_name')
@@ -117,6 +117,7 @@ class PatientSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, source='user.password')
     birth_date = serializers.DateField()
     age = serializers.SerializerMethodField(read_only=True, method_name='cal_age')
+    image = serializers.SerializerMethodField(read_only=True, method_name='get_image')
 
     def cal_age(self, obj):
         today = date.today()
@@ -128,6 +129,12 @@ class PatientSerializer(serializers.ModelSerializer):
             return f'{age} months'
         age = (today.day - obj.birth_date.day) % 30
         return f'{age} days'
+
+    def get_image(self, obj):
+        if UserImage.objects.filter(user_id=obj.user.id).exists():
+            request = self.context.get('request')
+            return request.build_absolute_uri(UserImage.objects.get(user_id=obj.user.id).image.url)
+        return None
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')

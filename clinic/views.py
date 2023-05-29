@@ -35,15 +35,21 @@ class UserProfileViewSet(RetrieveModelMixin, GenericViewSet):
             if self.request.method == 'PUT':
                 return PatientUpdateSerializer
             return PatientSerializer
+        
+    def get_serializer_context(self):
+        return {
+            'request': self.request,
+        }
 
     @action(detail=False, methods=['GET', 'PUT'])
     def me(self, request):
         is_doctor = Doctor.objects.filter(user_id=request.user.id).exists()
         is_patient = Patient.objects.filter(user_id=request.user.id).exists()
+        context = self.get_serializer_context()
         if is_doctor:
             doctor = Doctor.objects.get(user_id=request.user.id)
             if request.method == 'GET':
-                serializer = DoctorSerializer(doctor)
+                serializer = DoctorSerializer(doctor, context=context)
                 return Response(serializer.data)
             if request.method == 'PUT':
                 serializer = DoctorUpdateSerializer(doctor, data=request.data)
@@ -53,7 +59,7 @@ class UserProfileViewSet(RetrieveModelMixin, GenericViewSet):
         elif is_patient:
             patient = Patient.objects.get(user_id=request.user.id)
             if request.method == 'GET':
-                serializer = PatientSerializer(patient)
+                serializer = PatientSerializer(patient, context=context)
                 return Response(serializer.data)
             if request.method == 'PUT':
                 serializer = PatientUpdateSerializer(patient, data=request.data)
