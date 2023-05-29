@@ -36,6 +36,10 @@ class UserAdmin(BaseUserAdmin):
         ),
     )
 
+class DegreeInline(admin.TabularInline):
+    model = models.DoctorDegree
+    extra = 0
+
 @admin.register(models.Doctor)
 class DoctorAdmin(admin.ModelAdmin):
     list_display = ['first_name','last_name', 'specialization', 'email', 'phone_number', 
@@ -45,6 +49,7 @@ class DoctorAdmin(admin.ModelAdmin):
     list_select_related = ['location']
     search_fields = ['first_name__istartswith', 'last_name__istartswith', 'specialization__istartswith']    
     list_filter = ['approval_status', 'specialization']
+    inlines = [DegreeInline]
     def location(self, doctor):
         return doctor.location.address + ", " + doctor.location.city + ", " + doctor.location.state
     
