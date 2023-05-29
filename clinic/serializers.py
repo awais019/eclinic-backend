@@ -1,5 +1,7 @@
+from django.core.mail import send_mail
 from django.core.validators import MinValueValidator, MaxValueValidator
 from rest_framework import serializers
+import jwt
 from drf_writable_nested import WritableNestedModelSerializer
 from djoser.serializers import UserCreateSerializer as BaseUserCreateSerializer
 from djoser.serializers import UserSerializer as BaseUserSerializer
@@ -22,6 +24,21 @@ class UserCreateSerializer(BaseUserCreateSerializer):
                   'email', 'phone_number', 'gender', 'password']
     
     id = serializers.IntegerField(read_only=True)
+
+    def create(self, validated_data):
+        user = User.objects.create_user(**validated_data)
+        base_url = self.context['request'].build_absolute_uri('/')
+        token = jwt.encode({
+            'user_id': user.id,
+            'created_at': str(date.today()),
+            'is_active': user.is_active,
+        }, key='secret')
+        send_mail(
+            'Email Verification',
+            f'Please verify your email by clicking on the link below:\n{base_url}?token={token}/', '',
+            [user.email]
+        )
+        return user
 
 class UserImageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -70,7 +87,7 @@ class DoctorSerializer(WritableNestedModelSerializer, serializers.ModelSerialize
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')
-        user = UserCreateSerializer(data=user_data)
+        user = UserCreateSerializer(data=user_data, context=self.context)
         user.is_valid(raise_exception=True)
         user.save()
         location = validated_data.pop('location')
@@ -199,3 +216,5 @@ class AppointmentSerializer(serializers.ModelSerializer):
         model = Appointment
         fields = ['id', 'doctor', 'patient', 'date', 'time']
     
+class TokenSerializer(serializers.Serializer):
+    token = serializers.CharField(max_length=255)

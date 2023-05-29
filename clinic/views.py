@@ -1,5 +1,4 @@
 from django.shortcuts import render
-from django.core.mail import send_mail
 
 from rest_framework.response import Response
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, ListModelMixin
@@ -7,6 +6,7 @@ from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
+import jwt
 from rest_framework.filters import SearchFilter, OrderingFilter
 
 from .filtering import DoctorFilter
@@ -14,10 +14,9 @@ from .pagination import DefaultPagination
 from .models import Doctor, User, Patient, Review, Appointment, UserImage
 from .serializers import DoctorSerializer, DoctorUpdateSerializer, PatientSerializer, \
                         PatientUpdateSerializer, ReviewSerializer, AppointmentSerializer, \
-                            UserImageSerializer
+                            UserImageSerializer, TokenSerializer
 # Create your views here.
 def index(request):
-    send_mail('subject', 'message', 'awaistopper20@gmail.com', ['sp20-bcs-019@students.cuisahiwal.edu.pk'])
     return render(request, 'index.html')
 
 
@@ -132,3 +131,25 @@ class UserImageViewSet(ModelViewSet):
         if UserImage.objects.filter(user_id=request.user.id).exists():
             UserImage.objects.filter(user_id=request.user.id).delete()
         return super().create(request, *args, **kwargs)
+    
+
+class VerifyUserViewSet(GenericViewSet):
+    queryset = User.objects.all()
+    serializer_class = TokenSerializer
+
+    @action(detail=False, methods=['POST'])
+    def verify(self, request):
+        token = request.data.get('token')
+        print(token)
+        if token is None:
+            return Response({'error': 'Token is required'}, status=400)
+        try:
+            decode_token = jwt.decode(token, key='secret', algorithms=['HS256'])
+            user = User.objects.get(id=decode_token['user_id'])
+            if user.is_active:
+                return Response({'error': 'User already verified'}, status=400)
+            user.is_active = True
+            user.save()
+            return Response({'message': 'User verified successfully'}, status=200)
+        except:
+            return Response({'error': 'Invalid token'}, status=400)
