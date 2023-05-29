@@ -23,16 +23,28 @@ class UserCreateSerializer(BaseUserCreateSerializer):
     
     id = serializers.IntegerField(read_only=True)
 
+class UserImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserImage
+        fields = ['id', 'image']
+
+    def create(self, validated_data):
+        user_id = self.context['user_id']
+        user = User.objects.get(id=user_id)
+        return UserImage.objects.create(user=user, **validated_data)
+
 class UserSerializer(BaseUserSerializer):
     class Meta(BaseUserSerializer.Meta):
-        fields = ['id', 'first_name', 'last_name','email', 'phone_number', 'gender']
+        fields = ['id', 'first_name', 'last_name','email', 'phone_number', 'gender', 'image']
+
 
 class DoctorSerializer(WritableNestedModelSerializer, serializers.ModelSerializer):
     class Meta:
         model = Doctor
         fields = ['id', 'first_name', 'last_name', 'email', 'phone_number', 'gender', 'password', 
-                  'specialization', 'charges', 'location']
+                  'specialization', 'charges', 'image_url', 'location']
     location = LocationSerializer()
+    image_url = serializers.SerializerMethodField(read_only=True, method_name='get_image')
     id = serializers.IntegerField(read_only=True)
     first_name = serializers.CharField(max_length=255, source='user.first_name')
     last_name = serializers.CharField(max_length=255, source='user.last_name')
@@ -44,6 +56,12 @@ class DoctorSerializer(WritableNestedModelSerializer, serializers.ModelSerialize
     charges = serializers.DecimalField(max_digits=8, decimal_places=2,
                                         validators=[MinValueValidator(1)])
     
+    def get_image(self, obj):
+        if UserImage.objects.filter(user_id=obj.user.id).exists():
+            request = self.context.get('request')
+            return request.build_absolute_uri(UserImage.objects.get(user_id=obj.user.id).image.url)
+        return None
+
     def create(self, validated_data):
         user_data = validated_data.pop('user')
         user = UserCreateSerializer(data=user_data)
@@ -165,12 +183,3 @@ class AppointmentSerializer(serializers.ModelSerializer):
         model = Appointment
         fields = ['id', 'doctor', 'patient', 'date', 'time']
     
-class UserImageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UserImage
-        fields = ['id', 'image']
-
-    def create(self, validated_data):
-        user_id = self.context['user_id']
-        user = User.objects.get(id=user_id)
-        return UserImage.objects.create(user=user, **validated_data)
