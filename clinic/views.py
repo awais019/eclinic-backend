@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.core.mail import send_mail
 
 from rest_framework.response import Response
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, ListModelMixin
@@ -15,8 +16,8 @@ from .serializers import DoctorSerializer, DoctorUpdateSerializer, PatientSerial
                         PatientUpdateSerializer, ReviewSerializer, AppointmentSerializer, \
                             UserImageSerializer
 # Create your views here.
-
 def index(request):
+    send_mail('subject', 'message', 'awaistopper20@gmail.com', ['sp20-bcs-019@students.cuisahiwal.edu.pk'])
     return render(request, 'index.html')
 
 
