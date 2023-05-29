@@ -11,9 +11,9 @@ APPROVAL_CHOICES = (
 )
 
 GENDER_CHOICES = (
-    ('male', 'Male'),
-    ('female', 'Female'),
-    ('other', 'Other'),
+    ('Male', 'Male'),
+    ('Female', 'Female'),
+    ('Other', 'Other'),
 )
 
 PAYEMENT_CHOICES = (
