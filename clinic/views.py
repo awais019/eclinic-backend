@@ -10,9 +10,10 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 
 from .filtering import DoctorFilter
 from .pagination import DefaultPagination
-from .models import Doctor, User, Patient, Review, Appointment
+from .models import Doctor, User, Patient, Review, Appointment, UserImage
 from .serializers import DoctorSerializer, DoctorUpdateSerializer, PatientSerializer, \
-                        PatientUpdateSerializer, ReviewSerializer, AppointmentSerializer
+                        PatientUpdateSerializer, ReviewSerializer, AppointmentSerializer, \
+                            UserImageSerializer
 # Create your views here.
 
 def index(request):
@@ -107,4 +108,20 @@ class AppointmentViewSet(CreateModelMixin, GenericViewSet):
         
         return Response({'error': 'Only patients can create appointments.'}, status=403)
         
-        
+
+class UserImageViewSet(ModelViewSet):
+    serializer_class = UserImageSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_context(self):
+        return {
+            'user_id': self.request.user.id
+        }
+
+    def get_queryset(self):
+        return UserImage.objects.filter(user_id=self.request.user.id)
+    
+    def create(self, request, *args, **kwargs):
+        if UserImage.objects.filter(user_id=request.user.id).exists():
+            UserImage.objects.filter(user_id=request.user.id).delete()
+        return super().create(request, *args, **kwargs)

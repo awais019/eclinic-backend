@@ -21,6 +21,7 @@ PAYEMENT_CHOICES = (
     ('unpaid', 'Unpaid'),
 )
 
+    
 class User(AbstractUser):
     username = None
     email = models.EmailField(unique=True)
@@ -29,6 +30,10 @@ class User(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
     objects = UserManager()
+
+class UserImage(models.Model):
+    image = models.ImageField(upload_to='users/images', null=True, blank=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
 
 class Doctor(models.Model):
     specialization = models.CharField(max_length=255)
