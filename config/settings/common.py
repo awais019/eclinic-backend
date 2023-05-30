@@ -40,11 +40,13 @@ INSTALLED_APPS = [
     'debug_toolbar',    
     'django_filters',
     'rest_framework',
+    'corsheaders',
     'djoser',
     'clinic',
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -63,6 +65,9 @@ INTERNAL_IPS = [
     # ...
 ]
 
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:3000",
+]
 
 TEMPLATES = [
     {
