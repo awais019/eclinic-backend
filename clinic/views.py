@@ -1,6 +1,7 @@
 from django.shortcuts import render
 
 from rest_framework.response import Response
+from rest_framework import status
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, ListModelMixin
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from rest_framework.permissions import IsAuthenticated
@@ -88,6 +89,14 @@ class DoctorRetrieveViewSet(RetrieveModelMixin, GenericViewSet):
 class PatientRegisterViewSet(CreateModelMixin, GenericViewSet):
     queryset = Patient.objects.all()
     serializer_class = PatientSerializer
+    
+    def create(self, request, *args, **kwargs):
+        super().create(request, *args, **kwargs)
+        return Response({
+            'status': True,
+            'code': 201,
+            'message': 'Patient created successfully.'
+        })
 
 class PatientRetrieveViewSet(RetrieveModelMixin, GenericViewSet):
     queryset = Patient.objects.select_related().all()

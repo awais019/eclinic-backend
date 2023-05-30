@@ -7,6 +7,10 @@ from djoser.serializers import UserCreateSerializer as BaseUserCreateSerializer
 from djoser.serializers import UserSerializer as BaseUserSerializer
 from .models import Doctor, Patient, Location, Review, Appointment, UserImage, User, DoctorDegree
 from datetime import date
+import environ
+
+env = environ.Env()
+environ.Env.read_env('.env')
 
 class LocationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -27,7 +31,7 @@ class UserCreateSerializer(BaseUserCreateSerializer):
 
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
-        base_url = self.context['request'].build_absolute_uri('/')
+        base_url = env('BASE_CLIENT_URL')
         token = jwt.encode({
             'user_id': user.id,
             'created_at': str(date.today()),
@@ -35,7 +39,7 @@ class UserCreateSerializer(BaseUserCreateSerializer):
         }, key='secret')
         send_mail(
             'Email Verification',
-            f'Please verify your email by clicking on the link below:\n{base_url}?token={token}/', '',
+            f'Please verify your email by clicking on the link below:\n{base_url}/?token={token}', '',
             [user.email]
         )
         return user
