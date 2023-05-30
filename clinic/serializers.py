@@ -1,5 +1,6 @@
 from django.core.mail import send_mail
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.db import transaction
 from rest_framework import serializers
 import jwt
 from drf_writable_nested import WritableNestedModelSerializer
@@ -90,16 +91,17 @@ class DoctorSerializer(WritableNestedModelSerializer, serializers.ModelSerialize
         return None
 
     def create(self, validated_data):
-        user_data = validated_data.pop('user')
-        user = UserCreateSerializer(data=user_data, context=self.context)
-        user.is_valid(raise_exception=True)
-        user.save()
-        location = validated_data.pop('location')
-        location = Location.objects.create(**location)
-        degree = validated_data.pop('degree')
-        doctor = Doctor.objects.create(user=user.instance, location=location, **validated_data)
-        DoctorDegree.objects.create(doctor=doctor, **degree)
-        return doctor
+        with transaction.atomic():
+            user_data = validated_data.pop('user')
+            user = UserCreateSerializer(data=user_data, context=self.context)
+            user.is_valid(raise_exception=True)
+            user.save()
+            location = validated_data.pop('location')
+            location = Location.objects.create(**location)
+            degree = validated_data.pop('degree')
+            doctor = Doctor.objects.create(user=user.instance, location=location, **validated_data)
+            DoctorDegree.objects.create(doctor=doctor, **degree)
+            return doctor
 
     # first_name = serializers.CharField(max_length=255)
     # last_name = serializers.CharField(max_length=255)
@@ -120,18 +122,19 @@ class DoctorUpdateSerializer(serializers.ModelSerializer):
     gender = serializers.CharField(max_length=20)
 
     def update(self, instance, validated_data):
-        user_data = {
+        with transaction.atomic():
+            user_data = {
             'first_name': validated_data.get('first_name', instance.user.first_name),
             'last_name': validated_data.get('last_name', instance.user.last_name),
             'gender': validated_data.get('gender', instance.user.last_name),
             'email': instance.user.email,
             'phone_number': instance.user.phone_number,
             'password': instance.user.password
-        }
-        user = UserSerializer(instance.user, data=user_data)
-        user.is_valid(raise_exception=True)
-        user.save()
-        return super().update(instance, validated_data)
+            }
+            user = UserSerializer(instance.user, data=user_data)
+            user.is_valid(raise_exception=True)
+            user.save()
+            return super().update(instance, validated_data)
 
 class PatientSerializer(serializers.ModelSerializer):
     class Meta:
@@ -167,11 +170,12 @@ class PatientSerializer(serializers.ModelSerializer):
         return None
 
     def create(self, validated_data):
-        user_data = validated_data.pop('user')
-        user = UserCreateSerializer(data=user_data)
-        user.is_valid(raise_exception=True)
-        user.save()
-        return Patient.objects.create(user=user.instance, **validated_data)
+        with transaction.atomic():
+            user_data = validated_data.pop('user')
+            user = UserCreateSerializer(data=user_data)
+            user.is_valid(raise_exception=True)
+            user.save()
+            return Patient.objects.create(user=user.instance, **validated_data)
     
 class PatientUpdateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -183,18 +187,19 @@ class PatientUpdateSerializer(serializers.ModelSerializer):
     birth_date = serializers.DateField()
 
     def update(self, instance, validated_data):
-        user_data = {
-            'first_name': validated_data.get('first_name', instance.user.first_name),
-            'last_name': validated_data.get('last_name', instance.user.last_name),
-            'gender': validated_data.get('gender', instance.user.last_name),
-            'email': instance.user.email,
-            'phone_number': instance.user.phone_number,
-            'password': instance.user.password
-        }
-        user = UserSerializer(instance.user, data=user_data)
-        user.is_valid(raise_exception=True)
-        user.save()
-        return super().update(instance, validated_data)
+        with transaction.atomic():
+            user_data = {
+                'first_name': validated_data.get('first_name', instance.user.first_name),
+                'last_name': validated_data.get('last_name', instance.user.last_name),
+                'gender': validated_data.get('gender', instance.user.last_name),
+                'email': instance.user.email,
+                'phone_number': instance.user.phone_number,
+                'password': instance.user.password
+            }
+            user = UserSerializer(instance.user, data=user_data)
+            user.is_valid(raise_exception=True)
+            user.save()
+            return super().update(instance, validated_data)
         
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
